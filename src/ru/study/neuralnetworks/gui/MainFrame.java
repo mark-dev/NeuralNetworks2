@@ -1,6 +1,7 @@
 package ru.study.neuralnetworks.gui;
 
 
+import edu.uci.ics.jung.algorithms.layout.CircleLayout;
 import edu.uci.ics.jung.algorithms.layout.KKLayout;
 import edu.uci.ics.jung.graph.Graph;
 import edu.uci.ics.jung.visualization.GraphZoomScrollPane;
@@ -24,10 +25,10 @@ import java.awt.event.ActionListener;
  * Created by Mark
  */
 public class MainFrame extends JFrame {
-    private static int NETWORK_SIZE = 5;
+    private static int NETWORK_SIZE = 9;
 
     private MainFrame() {
-        setTitle("comporator");
+        setTitle("hopfield");
         initGUI();
     }
 
@@ -46,19 +47,19 @@ public class MainFrame extends JFrame {
         buttonRecognize = new JButton("recognize");
         buttonTeach = new JButton("teach");
         buttonSetRandom = new JButton("rnd");
-        resultLabel = new JLabel("");
         arrowLabel = new JLabel("->");
         checkBoxsInput = new CheckBoxPanel(NETWORK_SIZE, true);
         checkBoxsOutput = new CheckBoxPanel(NETWORK_SIZE, false);
-        Font font = resultLabel.getFont();
+        Font font = arrowLabel.getFont();
         Font boldFont = new Font(font.getFontName(), Font.BOLD, font.getSize());
-        resultLabel.setFont(boldFont);
         arrowLabel.setFont(boldFont);
         //set bg Color
         panelTop.setBackground(lightBlue);
         panelCenter.setBackground(lightYellow);
         panelBottom.setBackground(lightBlue);
         buttonRecognize.setBackground(lightBlue);
+        checkBoxsInput.setBackground(panelBottom.getBackground());
+        checkBoxsOutput.setBackground(panelBottom.getBackground());
         //preffered size
         panelTop.setPreferredSize(new Dimension(WIDTH, (int) (0.1 * HEIGHT)));
         panelCenter.setPreferredSize(new Dimension(WIDTH, (int) (0.65 * HEIGHT)));
@@ -67,6 +68,8 @@ public class MainFrame extends JFrame {
         checkBoxsOutput.setPreferredSize(new Dimension((int) (WIDTH * 0.3), (int) (0.2 * HEIGHT)));
         // borders
         panelTop.setBorder(BorderFactory.createEtchedBorder());
+        checkBoxsInput.setBorder(BorderFactory.createEtchedBorder());
+        checkBoxsOutput.setBorder(checkBoxsInput.getBorder());
         //layouts
         panelTop.setLayout(new FlowLayout());
         panelCenter.setLayout(new BorderLayout());
@@ -112,8 +115,9 @@ public class MainFrame extends JFrame {
     }
 
     private void buttonTeachActionPerformed() {
-     hopfieldNetwork.saveImg(new HopfieldImage(checkBoxsInput.getMatrix(),"desc"));
-
+        hopfieldNetwork.saveImg(new HopfieldImage(checkBoxsInput.getMatrix(), "desc"));
+        sp.repaint();
+        checkBoxsOutput.clear();
     }
 
     private void buttonRandomActionPerformed() {
@@ -122,20 +126,15 @@ public class MainFrame extends JFrame {
     }
 
 
-
-
     private void buttonOkActionPerformed() {
-        HopfieldImage recognized = hopfieldNetwork.recognizeImg(new HopfieldImage(checkBoxsInput.getMatrix(),"desc"));
+        HopfieldImage recognized = hopfieldNetwork.recognizeImg(new HopfieldImage(checkBoxsInput.getMatrix(), "desc"));
         checkBoxsOutput.fromMatrix(recognized.getImg());
+        sp.repaint();
     }
 
-
-    private void clearResult() {
-        resultLabel.setText("");
-    }
 
     private VisualizationViewer getVIS(Graph g) {
-        VisualizationViewer vv = new VisualizationViewer(new KKLayout(g), new Dimension(1000, 1000));
+        VisualizationViewer vv = new VisualizationViewer(new CircleLayout(g), new Dimension(1000, 1000));
         vv.getRenderContext().setVertexLabelTransformer(new Transformer<Neuron, String>() {
             @Override
             public String transform(Neuron n) {
@@ -179,7 +178,6 @@ public class MainFrame extends JFrame {
     private JButton buttonRecognize;
     private JButton buttonSetRandom;
     private JButton buttonTeach;
-    private JLabel resultLabel;
     private JLabel arrowLabel;
     private CheckBoxPanel checkBoxsInput;
     private CheckBoxPanel checkBoxsOutput;

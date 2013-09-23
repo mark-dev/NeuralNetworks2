@@ -10,6 +10,7 @@ import ru.study.neuralnetworks.neurons.Neuron;
 import ru.study.neuralnetworks.neurons.VirtualNeuron;
 
 import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Created with IntelliJ IDEA.
@@ -22,13 +23,13 @@ public class HopfieldNetwork {
     private ArrayList<HopfieldImage> knownImages;
 
     private ArrayList<HopfieldNeuron> workerNeurons;
-    private ArrayList<Neuron> virtualNeurons;
+    private ArrayList<VirtualNeuron> virtualNeurons;
     private ArrayList<NeuronEdge> edges;
     private DirectedSparseGraph<Neuron, NeuronEdge> network;
 
     public HopfieldNetwork(int neuronCount) {
         knownImages = new ArrayList<HopfieldImage>();
-        virtualNeurons = new ArrayList<Neuron>();
+        virtualNeurons = new ArrayList<VirtualNeuron>();
         workerNeurons = new ArrayList<HopfieldNeuron>();
         edges = new ArrayList<NeuronEdge>();
         network = new DirectedSparseGraph<Neuron, NeuronEdge>();
@@ -69,13 +70,8 @@ public class HopfieldNetwork {
         Matrix weights = getWeightMatrix();
         Matrix imgMatrix = img.getImg();
         //weight + X^T * X
-        Matrix transponed = imgMatrix.transpose();
-        Matrix times = transponed.times(imgMatrix);
-        times.print(0,0);
-        weights.print(0,0);
-        Matrix newWeight = weights.plus(times);
+        Matrix newWeight = weights.plus(imgMatrix.transpose().times(imgMatrix));
         setWeights(newWeight);
-        getWeightMatrix().print(0, 0);
     }
 
     public HopfieldImage recognizeImg(HopfieldImage img) {
@@ -84,8 +80,10 @@ public class HopfieldNetwork {
         boolean isStateChanged = false;
         for (int i = 0; i < workerNeurons.size(); i++) {
             HopfieldNeuron source = workerNeurons.get(i);
+            virtualNeurons.get(i).setOutValue(imgMatrix.get(0, i));
             source.setState(imgMatrix.get(0, i));
-            ArrayList<NeuronEdge> outEdges = new ArrayList<NeuronEdge>(edges.subList(i * workerNeurons.size(), (i + 1) * workerNeurons.size()));
+            List<NeuronEdge> sub = edges.subList(i * workerNeurons.size(), (i + 1) * workerNeurons.size());
+            ArrayList<NeuronEdge> outEdges = new ArrayList<NeuronEdge>(sub);
             ArrayList<NeuroInput> inputs = new ArrayList<NeuroInput>();
             for (int e = 0; e < outEdges.size(); e++) {
                 NeuronEdge edge = outEdges.get(e);
@@ -93,9 +91,7 @@ public class HopfieldNetwork {
                 inputs.add(input);
             }
             if (source.addInput(inputs)) {
-                System.out.println("Out = " + source.getOut());
                 if (source.getOut() < 0) {
-                    System.out.println("i=" + i + "inverted");
                     double oldValue = imgMatrix.get(0, i);
                     imgNewMatrix.set(0, i, invert(oldValue));
                     source.invertState();
@@ -107,8 +103,6 @@ public class HopfieldNetwork {
 
         }
         if (!isStateChanged) {
-            System.out.println("recognized : ");
-            imgNewMatrix.print(0, 0);
             return img;
         } else {
             HopfieldImage newImg = new HopfieldImage(imgNewMatrix, img.getDescription());
@@ -157,7 +151,7 @@ public class HopfieldNetwork {
         Matrix z2 = new Matrix(new double[][]{
                 {-1, 1, 1}
         });
-        System.out.println("zlen: "+z.getColumnDimension() + "\trows: "+z.getRowDimension());
+        System.out.println("zlen: " + z.getColumnDimension() + "\trows: " + z.getRowDimension());
         h.saveImg(new HopfieldImage(z, "first"));
         h.saveImg(new HopfieldImage(z1, "sec"));
         h.recognizeImg(new HopfieldImage(z2, "test"));

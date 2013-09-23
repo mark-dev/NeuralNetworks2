@@ -84,7 +84,6 @@ public abstract class Neuron {
     private double sumInputs(ArrayList<NeuroInput> inputs) {
         double sum = 0;
         for (NeuroInput input : inputs) {
-            System.out.println("sum + "+input.getValue() + "*" + input.getWeight());
             sum = sum + input.getValue() * input.getWeight();
         }
         return sum;
