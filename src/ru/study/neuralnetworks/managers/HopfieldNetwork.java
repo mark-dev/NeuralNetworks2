@@ -19,6 +19,7 @@ import java.util.ArrayList;
  * To change this template use File | Settings | File Templates.
  */
 public class HopfieldNetwork {
+    private static final int MAX_ITERATIONS = 100;
     private ArrayList<HopfieldImage> knownImages;
 
     private ArrayList<HopfieldNeuron> workerNeurons;
@@ -90,8 +91,10 @@ public class HopfieldNetwork {
         Matrix weights = getWeightMatrix();
 
         boolean isStateChanged = true; //хотя-бы один нейрон изменил состояние в процессе
-
+         int iterations = 0;
         while (isStateChanged) {
+//            System.out.println("Input: ");
+//            imgMatrix.print(0,0);
             isStateChanged = false;
             //Перебираем все нейроны, уставливаем им состояние в соответствии с входными нейронами
             for (int i = 0; i < workerNeurons.size(); i++) {
@@ -121,6 +124,10 @@ public class HopfieldNetwork {
                 }
             }
             imgMatrix = nextIterMatrix.copy();
+            if(iterations>MAX_ITERATIONS)
+                break;
+            else
+                iterations++;
         }
         return new HopfieldImage(imgMatrix, img.getDescription());
     }

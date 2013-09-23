@@ -3,6 +3,8 @@ package ru.study.neuralnetworks.gui;
 import Jama.Matrix;
 
 import javax.swing.*;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import java.awt.*;
 import java.awt.image.BufferedImage;
 
@@ -18,23 +20,38 @@ public class CheckBoxPanel extends JPanel {
 
     public CheckBoxPanel(int size, boolean rnd, boolean editable) {
         checkers = new JCheckBox[size];
-        GridLayout layout = new GridLayout((int)(Math.sqrt(size)),(int) (Math.sqrt(size)), 0, 0);
+        int checkersPerLine =   (int) (Math.sqrt(size));
+        GridLayout layout = new GridLayout(checkersPerLine,checkersPerLine, 0, 0);
         setLayout(layout);
-        ImageIcon black = getIcon(Color.BLACK);
-        ImageIcon white = getIcon(Color.WHITE);
+        final ImageIcon black = getIcon(Color.BLACK);
+        final ImageIcon white = getIcon(Color.WHITE);
         for (int i = 0; i < size; i++) {
-            JCheckBox chBox = new JCheckBox();
+            final JCheckBox chBox = new JCheckBox();
             chBox.setIcon(white);
             chBox.setEnabled(editable);
             chBox.setSelectedIcon(black);
             chBox.setDisabledSelectedIcon(black);
+            chBox.setRolloverIcon(white);
             chBox.setDisabledIcon(white);
             chBox.setBorder(BorderFactory.createEmptyBorder());
+            chBox.addChangeListener(new ChangeListener() {
+                @Override
+                public void stateChanged(ChangeEvent e) {
+                    if(chBox.isSelected())
+                        chBox.setIcon(black);
+
+                    else
+                        chBox.setIcon(white);
+                }
+            });
             if (rnd)
                 chBox.setSelected(Math.random() > 0.5);
             add(chBox);
             checkers[i] = chBox;
         }
+        Dimension prefCh = checkers[0].getPreferredSize();
+
+        setPreferredSize(new Dimension(prefCh.width * checkersPerLine,prefCh.height * checkersPerLine));
     }
 
     public void random() {
@@ -71,5 +88,18 @@ public class CheckBoxPanel extends JPanel {
             }
         }
         return new ImageIcon(bi);
+    }
+
+    public static void main(String[] args) {
+        JFrame fs = new JFrame();
+        BorderLayout bl = new BorderLayout();
+        bl.setHgap(1);
+        bl.setVgap(1);
+        fs.setLayout(bl);
+        fs.add(new CheckBoxPanel(25,true,true),BorderLayout.CENTER);
+
+        fs.setPreferredSize(new Dimension(300,300));
+        fs.pack();
+        fs.setVisible(true);
     }
 }

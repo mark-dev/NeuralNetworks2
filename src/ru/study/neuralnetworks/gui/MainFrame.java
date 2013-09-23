@@ -67,8 +67,8 @@ public class MainFrame extends JFrame {
         panelTop.setPreferredSize(new Dimension(WIDTH, (int) (0.1 * HEIGHT)));
         panelCenter.setPreferredSize(new Dimension(WIDTH, (int) (0.65 * HEIGHT)));
         panelBottom.setPreferredSize(new Dimension(WIDTH, (int) (0.25 * HEIGHT)));
-        checkBoxsInput.setPreferredSize(new Dimension((int) (WIDTH * 0.3), (int) (0.2 * HEIGHT)));
-        checkBoxsOutput.setPreferredSize(new Dimension((int) (WIDTH * 0.3), (int) (0.2 * HEIGHT)));
+//        checkBoxsInput.setPreferredSize(new Dimension((int) (WIDTH * 0.3), (int) (0.2 * HEIGHT)));
+//        checkBoxsOutput.setPreferredSize(new Dimension((int) (WIDTH * 0.3), (int) (0.2 * HEIGHT)));
         // borders
         panelTop.setBorder(BorderFactory.createEtchedBorder());
         checkBoxsInput.setBorder(BorderFactory.createEtchedBorder());
@@ -111,10 +111,10 @@ public class MainFrame extends JFrame {
         // add components to panels
         panelBottom.add(buttonTeach);
         panelBottom.add(buttonRecognize);
+        panelBottom.add(buttonSetRandom);
         panelBottom.add(checkBoxsInput);
         panelBottom.add(arrowLabel);
         panelBottom.add(checkBoxsOutput);
-        panelBottom.add(buttonSetRandom);
         panelBottom.add(buttonRebuildNetwork);
         //add panels to frame
         getContentPane().add(panelCenter, BorderLayout.CENTER);
@@ -198,7 +198,12 @@ public class MainFrame extends JFrame {
             InstantiationException,
             IllegalAccessException {
         UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
-        new MainFrame().setVisible(true);
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                new MainFrame().setVisible(true);
+            }
+        }).run();
     }
 
     //-----------------------
