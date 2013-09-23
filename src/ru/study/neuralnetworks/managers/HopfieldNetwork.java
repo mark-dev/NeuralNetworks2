@@ -10,7 +10,6 @@ import ru.study.neuralnetworks.neurons.Neuron;
 import ru.study.neuralnetworks.neurons.VirtualNeuron;
 
 import java.util.ArrayList;
-import java.util.List;
 
 /**
  * Created with IntelliJ IDEA.
@@ -64,50 +63,66 @@ public class HopfieldNetwork {
         }
     }
 
-    public void saveImg(HopfieldImage img) {
-        knownImages.add(img);
-        //modify edge weight
-        Matrix weights = getWeightMatrix();
-        Matrix imgMatrix = img.getImg();
-        //weight + X^T * X
-        Matrix newWeight = weights.plus(imgMatrix.transpose().times(imgMatrix));
-        setWeights(newWeight);
+    public void saveImg(HopfieldImage img) throws Exception {
+        if (hasFreeSpace()) {
+            knownImages.add(img);
+            //modify edge weight
+            Matrix weights = getWeightMatrix();
+            Matrix imgMatrix = img.getImg();
+            //weight + X^T * X
+            Matrix newWeight = weights.plus(imgMatrix.transpose().times(imgMatrix));
+            setWeights(newWeight);
+        } else {
+            throw new Exception("hopfield network full");
+        }
+    }
+
+    private boolean hasFreeSpace() {
+        int networkSize = workerNeurons.size();
+        int capability = (int) (networkSize / (2 * Math.log(networkSize)));
+        System.out.println("capability="+capability);
+        return knownImages.size() < capability;
     }
 
     public HopfieldImage recognizeImg(HopfieldImage img) {
-        Matrix imgMatrix = img.getImg();
-        Matrix imgNewMatrix = imgMatrix.copy();
-        boolean isStateChanged = false;
-        for (int i = 0; i < workerNeurons.size(); i++) {
-            HopfieldNeuron source = workerNeurons.get(i);
-            virtualNeurons.get(i).setOutValue(imgMatrix.get(0, i));
-            source.setState(imgMatrix.get(0, i));
-            List<NeuronEdge> sub = edges.subList(i * workerNeurons.size(), (i + 1) * workerNeurons.size());
-            ArrayList<NeuronEdge> outEdges = new ArrayList<NeuronEdge>(sub);
-            ArrayList<NeuroInput> inputs = new ArrayList<NeuroInput>();
-            for (int e = 0; e < outEdges.size(); e++) {
-                NeuronEdge edge = outEdges.get(e);
-                NeuroInput input = new NeuroInput(imgMatrix.get(0, e), edge.getWeight());
-                inputs.add(input);
-            }
-            if (source.addInput(inputs)) {
-                if (source.getOut() < 0) {
-                    double oldValue = imgMatrix.get(0, i);
-                    imgNewMatrix.set(0, i, invert(oldValue));
-                    source.invertState();
-                    isStateChanged = true;
-                }
-            } else {
-                throw new IllegalArgumentException("wrong network");
-            }
+        Matrix imgMatrix = img.getImg().copy();
+        Matrix nextIterMatrix = imgMatrix.copy();
+        Matrix weights = getWeightMatrix();
 
+        boolean isStateChanged = true; //хотя-бы один нейрон изменил состояние в процессе
+
+        while (isStateChanged) {
+            isStateChanged = false;
+            //Перебираем все нейроны, уставливаем им состояние в соответствии с входными нейронами
+            for (int i = 0; i < workerNeurons.size(); i++) {
+                HopfieldNeuron source = workerNeurons.get(i);
+                virtualNeurons.get(i).setOutValue(imgMatrix.get(0, i));
+                source.setState(imgMatrix.get(0, i));
+
+                //Формируем список входов для текущего нейрона
+                ArrayList<NeuroInput> inputs = new ArrayList<NeuroInput>();
+                for (int e = 0; e < workerNeurons.size(); e++) {
+                    double weight = weights.get(e, i);
+                    NeuroInput input = new NeuroInput(imgMatrix.get(0, e), weight);
+                    inputs.add(input);
+                }
+                /*Передаем в нейрон связи из других нейронов*/
+                if (source.addInput(inputs)) {
+                    //Проверяет, стоит ли изменить текущему нейрону состояние
+                    if (source.getOut() < 0) {
+                        double oldValue = imgMatrix.get(0, i);
+                        //Эта новые входы, которые будут использоватся на след. итерации
+                        nextIterMatrix.set(0, i, invert(oldValue));
+                        source.invertState();
+                        isStateChanged = true; //нейрон изменил состояние, значит продолжаем
+                    }
+                } else {
+                    throw new IllegalArgumentException("wrong network");
+                }
+            }
+            imgMatrix = nextIterMatrix.copy();
         }
-        if (!isStateChanged) {
-            return img;
-        } else {
-            HopfieldImage newImg = new HopfieldImage(imgNewMatrix, img.getDescription());
-            return recognizeImg(newImg);
-        }
+        return new HopfieldImage(imgMatrix, img.getDescription());
     }
 
     private Matrix getWeightMatrix() {
@@ -140,7 +155,7 @@ public class HopfieldNetwork {
         return val * -1;
     }
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws Exception {
         HopfieldNetwork h = new HopfieldNetwork(3);
         Matrix z = new Matrix(new double[][]{
                 {-1, 1, -1}

@@ -25,7 +25,7 @@ import java.awt.event.ActionListener;
  * Created by Mark
  */
 public class MainFrame extends JFrame {
-    private static int NETWORK_SIZE = 9;
+    private static int NETWORK_SIZE = 25;
 
     private MainFrame() {
         setTitle("hopfield");
@@ -33,7 +33,7 @@ public class MainFrame extends JFrame {
     }
 
     private void initGUI() {
-        int WIDTH = 600;
+        int WIDTH = 700;
         int HEIGHT = 500;
         Color lightBlue = new Color(51, 204, 255);   // light blue
         Color lightYellow = new Color(255, 255, 215);
@@ -47,9 +47,10 @@ public class MainFrame extends JFrame {
         buttonRecognize = new JButton("recognize");
         buttonTeach = new JButton("teach");
         buttonSetRandom = new JButton("rnd");
+        buttonRebuildNetwork = new JButton("rebuild");
         arrowLabel = new JLabel("->");
-        checkBoxsInput = new CheckBoxPanel(NETWORK_SIZE, true);
-        checkBoxsOutput = new CheckBoxPanel(NETWORK_SIZE, false);
+        checkBoxsInput = new CheckBoxPanel(NETWORK_SIZE, true,true);
+        checkBoxsOutput = new CheckBoxPanel(NETWORK_SIZE, false,false);
         Font font = arrowLabel.getFont();
         Font boldFont = new Font(font.getFontName(), Font.BOLD, font.getSize());
         arrowLabel.setFont(boldFont);
@@ -92,21 +93,26 @@ public class MainFrame extends JFrame {
                 buttonTeachActionPerformed();
             }
         });
+        buttonRebuildNetwork.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                buttonRebuildActionPerformed();
+            }
+        });
+
         /*
          hopfield network
         * */
 
-        hopfieldNetwork = new HopfieldNetwork(NETWORK_SIZE);
-        VisualizationViewer vs = getVIS(hopfieldNetwork.getNetwork());
-        sp = new GraphZoomScrollPane(vs);
-        panelCenter.add(sp, BorderLayout.CENTER);
+        createNetwork();
         // add components to panels
+        panelBottom.add(buttonTeach);
+        panelBottom.add(buttonRecognize);
         panelBottom.add(checkBoxsInput);
         panelBottom.add(arrowLabel);
         panelBottom.add(checkBoxsOutput);
-        panelBottom.add(buttonRecognize);
-        panelBottom.add(buttonTeach);
         panelBottom.add(buttonSetRandom);
+        panelBottom.add(buttonRebuildNetwork);
         //add panels to frame
         getContentPane().add(panelCenter, BorderLayout.CENTER);
         getContentPane().add(panelTop, BorderLayout.NORTH);
@@ -114,8 +120,30 @@ public class MainFrame extends JFrame {
         pack();
     }
 
+    private void buttonRebuildActionPerformed() {
+        checkBoxsInput.clear();
+        checkBoxsOutput.clear();
+        createNetwork();
+    }
+
+    private void createNetwork() {
+        if (sp != null) {
+            panelCenter.remove(sp);
+        }
+        hopfieldNetwork = new HopfieldNetwork(NETWORK_SIZE);
+        VisualizationViewer vs = getVIS(hopfieldNetwork.getNetwork());
+        sp = new GraphZoomScrollPane(vs);
+        panelCenter.add(sp, BorderLayout.CENTER);
+    }
+
     private void buttonTeachActionPerformed() {
-        hopfieldNetwork.saveImg(new HopfieldImage(checkBoxsInput.getMatrix(), "desc"));
+        try {
+            hopfieldNetwork.saveImg(new HopfieldImage(checkBoxsInput.getMatrix(), "desc"));
+        } catch (Exception e) {
+            if (e.getMessage().equals("hopfield network full")) {
+                JOptionPane.showMessageDialog(this, "The maximum image count is reached, re create network.");
+            }
+        }
         sp.repaint();
         checkBoxsOutput.clear();
     }
@@ -178,8 +206,10 @@ public class MainFrame extends JFrame {
     private JButton buttonRecognize;
     private JButton buttonSetRandom;
     private JButton buttonTeach;
+    private JButton buttonRebuildNetwork;
     private JLabel arrowLabel;
     private CheckBoxPanel checkBoxsInput;
     private CheckBoxPanel checkBoxsOutput;
     private HopfieldNetwork hopfieldNetwork;
+
 }

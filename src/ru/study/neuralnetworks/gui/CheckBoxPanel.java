@@ -16,7 +16,7 @@ import java.awt.image.BufferedImage;
 public class CheckBoxPanel extends JPanel {
     private JCheckBox[] checkers;
 
-    public CheckBoxPanel(int size, boolean rnd) {
+    public CheckBoxPanel(int size, boolean rnd, boolean editable) {
         checkers = new JCheckBox[size];
         GridLayout layout = new GridLayout((int)(Math.sqrt(size)),(int) (Math.sqrt(size)), 1, 1);
         setLayout(layout);
@@ -25,7 +25,10 @@ public class CheckBoxPanel extends JPanel {
         for (int i = 0; i < size; i++) {
             JCheckBox chBox = new JCheckBox();
             chBox.setIcon(white);
+            chBox.setEnabled(editable);
             chBox.setSelectedIcon(black);
+            chBox.setDisabledSelectedIcon(black);
+            chBox.setDisabledIcon(white);
             chBox.setBorder(BorderFactory.createEmptyBorder());
             if (rnd)
                 chBox.setSelected(Math.random() > 0.5);
@@ -35,13 +38,13 @@ public class CheckBoxPanel extends JPanel {
     }
 
     public void random() {
-        for (int i = 0; i < checkers.length; i++) {
-            checkers[i].setSelected(Math.random() > 0.5);
+        for (JCheckBox checker : checkers) {
+            checker.setSelected(Math.random() > 0.5);
         }
     }
     public void clear(){
-        for (int i = 0; i < checkers.length; i++) {
-            checkers[i].setSelected(false);
+        for (JCheckBox checker : checkers) {
+            checker.setSelected(false);
         }
     }
     public Matrix getMatrix() {
@@ -68,14 +71,5 @@ public class CheckBoxPanel extends JPanel {
             }
         }
         return new ImageIcon(bi);
-    }
-
-    public static void main(String[] args) {
-        JFrame fr = new JFrame();
-        fr.setLayout(new BorderLayout());
-        fr.add(new CheckBoxPanel(5, true), BorderLayout.CENTER);
-        fr.setPreferredSize(new Dimension(300, 300));
-        fr.pack();
-        fr.setVisible(true);
     }
 }
