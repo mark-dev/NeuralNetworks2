@@ -59,6 +59,8 @@ public class MainFrame extends JFrame {
         panelCenter.setBackground(lightYellow);
         panelBottom.setBackground(lightBlue);
         buttonRecognize.setBackground(lightBlue);
+        checkBoxsInput.setForeground(lightBlue);
+        checkBoxsOutput.setForeground(lightBlue);
         checkBoxsInput.setBackground(panelBottom.getBackground());
         checkBoxsOutput.setBackground(panelBottom.getBackground());
         //preffered size
@@ -74,6 +76,7 @@ public class MainFrame extends JFrame {
         //layouts
         panelTop.setLayout(new FlowLayout());
         panelCenter.setLayout(new BorderLayout());
+
         // action listeners
         buttonRecognize.addActionListener(new ActionListener() {
 

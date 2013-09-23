@@ -18,7 +18,7 @@ public class CheckBoxPanel extends JPanel {
 
     public CheckBoxPanel(int size, boolean rnd, boolean editable) {
         checkers = new JCheckBox[size];
-        GridLayout layout = new GridLayout((int)(Math.sqrt(size)),(int) (Math.sqrt(size)), 1, 1);
+        GridLayout layout = new GridLayout((int)(Math.sqrt(size)),(int) (Math.sqrt(size)), 0, 0);
         setLayout(layout);
         ImageIcon black = getIcon(Color.BLACK);
         ImageIcon white = getIcon(Color.WHITE);
