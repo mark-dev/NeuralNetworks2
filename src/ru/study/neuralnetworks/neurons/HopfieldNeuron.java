@@ -30,4 +30,8 @@ public class HopfieldNeuron extends Neuron {
     public void invertState() {
         state = state * -1;
     }
+
+    public double getState() {
+        return state;
+    }
 }

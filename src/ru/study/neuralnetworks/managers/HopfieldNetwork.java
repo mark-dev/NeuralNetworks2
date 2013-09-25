@@ -19,7 +19,7 @@ import java.util.ArrayList;
  * To change this template use File | Settings | File Templates.
  */
 public class HopfieldNetwork {
-    private static final int MAX_ITERATIONS = 100;
+    private static final int MAX_ITERATIONS = 8000;
     private ArrayList<HopfieldImage> knownImages;
 
     private ArrayList<HopfieldNeuron> workerNeurons;
@@ -65,7 +65,7 @@ public class HopfieldNetwork {
     }
 
     public void saveImg(HopfieldImage img) throws Exception {
-        if (hasFreeSpace()) {
+        if (true) { //hasFreeSpace()
             knownImages.add(img);
             //modify edge weight
             Matrix weights = getWeightMatrix();
@@ -106,7 +106,7 @@ public class HopfieldNetwork {
                 ArrayList<NeuroInput> inputs = new ArrayList<NeuroInput>();
                 for (int e = 0; e < workerNeurons.size(); e++) {
                     double weight = weights.get(e, i);
-                    NeuroInput input = new NeuroInput(imgMatrix.get(0, e), weight);
+                    NeuroInput input = new NeuroInput(imgMatrix.get(0,e), weight);
                     inputs.add(input);
                 }
                 /*Передаем в нейрон связи из других нейронов*/
@@ -124,8 +124,10 @@ public class HopfieldNetwork {
                 }
             }
             imgMatrix = nextIterMatrix.copy();
-            if(iterations>MAX_ITERATIONS)
+            if(iterations>MAX_ITERATIONS){
+                System.out.println(MAX_ITERATIONS+" reached -> break");
                 break;
+            }
             else
                 iterations++;
         }
@@ -176,6 +178,6 @@ public class HopfieldNetwork {
         System.out.println("zlen: " + z.getColumnDimension() + "\trows: " + z.getRowDimension());
         h.saveImg(new HopfieldImage(z, "first"));
         h.saveImg(new HopfieldImage(z1, "sec"));
-        h.recognizeImg(new HopfieldImage(z2, "test"));
+        h.recognizeImg(new HopfieldImage(z2, "test")).getImg().print(0,0);
     }
 }

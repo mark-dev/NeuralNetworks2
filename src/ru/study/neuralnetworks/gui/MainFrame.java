@@ -16,9 +16,13 @@ import ru.study.neuralnetworks.neurons.VirtualNeuron;
 
 
 import javax.swing.*;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.ItemEvent;
+import java.awt.event.ItemListener;
 
 
 /**
@@ -26,6 +30,7 @@ import java.awt.event.ActionListener;
  */
 public class MainFrame extends JFrame {
     private static int NETWORK_SIZE = 25;
+
 
     private MainFrame() {
         setTitle("hopfield");
@@ -44,13 +49,15 @@ public class MainFrame extends JFrame {
         panelCenter = new JPanel();
         panelTop = new JPanel();
         panelBottom = new JPanel();
+        checkBoxShowNetwork = new JCheckBox();
+        checkBoxShowNetwork.setSelected(false);
         buttonRecognize = new JButton("recognize");
         buttonTeach = new JButton("teach");
         buttonSetRandom = new JButton("rnd");
         buttonRebuildNetwork = new JButton("rebuild");
         arrowLabel = new JLabel("->");
-        checkBoxsInput = new CheckBoxPanel(NETWORK_SIZE, true,true);
-        checkBoxsOutput = new CheckBoxPanel(NETWORK_SIZE, false,false);
+        checkBoxsInput = new CheckBoxPanel(NETWORK_SIZE, true, true);
+        checkBoxsOutput = new CheckBoxPanel(NETWORK_SIZE, false, false);
         Font font = arrowLabel.getFont();
         Font boldFont = new Font(font.getFontName(), Font.BOLD, font.getSize());
         arrowLabel.setFont(boldFont);
@@ -102,7 +109,19 @@ public class MainFrame extends JFrame {
                 buttonRebuildActionPerformed();
             }
         });
-
+        checkBoxShowNetwork.addItemListener(new ItemListener() {
+            @Override
+            public void itemStateChanged(ItemEvent e) {
+                if(checkBoxShowNetwork.isSelected()){
+                    hideNetwork();
+                    displayNetwork();
+                }
+                else
+                {
+                   hideNetwork();
+                }
+            }
+        });
         /*
          hopfield network
         * */
@@ -116,6 +135,8 @@ public class MainFrame extends JFrame {
         panelBottom.add(arrowLabel);
         panelBottom.add(checkBoxsOutput);
         panelBottom.add(buttonRebuildNetwork);
+        panelBottom.add(checkBoxShowNetwork);
+        panelBottom.add(new JLabel("show network"));
         //add panels to frame
         getContentPane().add(panelCenter, BorderLayout.CENTER);
         getContentPane().add(panelTop, BorderLayout.NORTH);
@@ -134,9 +155,19 @@ public class MainFrame extends JFrame {
             panelCenter.remove(sp);
         }
         hopfieldNetwork = new HopfieldNetwork(NETWORK_SIZE);
+    }
+
+    private void displayNetwork() {
         VisualizationViewer vs = getVIS(hopfieldNetwork.getNetwork());
         sp = new GraphZoomScrollPane(vs);
         panelCenter.add(sp, BorderLayout.CENTER);
+        repaint();
+    }
+
+    private void hideNetwork() {
+        if(sp!=null)
+            panelCenter.remove(sp);
+        repaint();
     }
 
     private void buttonTeachActionPerformed() {
@@ -145,9 +176,11 @@ public class MainFrame extends JFrame {
         } catch (Exception e) {
             if (e.getMessage().equals("hopfield network full")) {
                 JOptionPane.showMessageDialog(this, "The maximum image count is reached, re create network.");
+                repaint();
             }
         }
-        sp.repaint();
+        if(sp!=null)
+            sp.repaint();
         checkBoxsOutput.clear();
     }
 
@@ -160,6 +193,7 @@ public class MainFrame extends JFrame {
     private void buttonOkActionPerformed() {
         HopfieldImage recognized = hopfieldNetwork.recognizeImg(new HopfieldImage(checkBoxsInput.getMatrix(), "desc"));
         checkBoxsOutput.fromMatrix(recognized.getImg());
+        if(sp!=null)
         sp.repaint();
     }
 
@@ -219,5 +253,5 @@ public class MainFrame extends JFrame {
     private CheckBoxPanel checkBoxsInput;
     private CheckBoxPanel checkBoxsOutput;
     private HopfieldNetwork hopfieldNetwork;
-
+    private JCheckBox checkBoxShowNetwork;
 }
