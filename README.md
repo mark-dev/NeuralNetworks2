@@ -1,3 +1,3 @@
 ## Hopfield neural network java
 
-[](img/screen.jpg)
+![](img/screen.jpg)
